@@ -62,18 +62,4 @@ class IconDataSource(private val apiService:IconInterface, private val composite
         )
     }
 
-    fun api_call(query:String)
-    {
-        compositeDisposable.add(
-        apiService.getListIcons(API_KEY, 20, queryString, 0)
-                .subscribeOn(Schedulers.io())
-                .subscribe({
-                    networkState.postValue(NetworkState.LOADED)
-                },{networkState.postValue(NetworkState.ERROR)
-                    Log.e("111111", "loadInitial: inside icon data source  load initial"+it.message )
-
-                })
-        )
-    }
-
 }
