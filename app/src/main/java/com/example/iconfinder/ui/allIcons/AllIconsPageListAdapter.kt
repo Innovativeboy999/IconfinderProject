@@ -2,13 +2,13 @@ package com.example.iconfinder.ui.allIcons
 
 import android.content.Context
 import android.content.Intent
+import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.Visibility
 import com.bumptech.glide.Glide
 import com.example.iconfinder.R
 import com.example.iconfinder.data.repository.NetworkState
@@ -16,8 +16,10 @@ import com.example.iconfinder.data.vo.iconList.Icon
 import com.example.iconfinder.databinding.IconListItemBinding
 import com.example.iconfinder.databinding.NetworkStateItemBinding
 import com.example.iconfinder.ui.singleIconDetaias.IconDetailsActivity
+import java.io.File
 
-class AllIconsPageListAdapter(public val context: Context) :PagedListAdapter<Icon, RecyclerView.ViewHolder>(IconDiffCallback())
+
+class AllIconsPageListAdapter(public val context: Context, val referenceInterface:PassValueInterface) :PagedListAdapter<Icon, RecyclerView.ViewHolder>(IconDiffCallback())
 {
     val ICON_VIEW_TYPE=1
     val NETWORK_VIEW_TYPE=2
@@ -29,7 +31,7 @@ class AllIconsPageListAdapter(public val context: Context) :PagedListAdapter<Ico
 
         if (viewType == ICON_VIEW_TYPE) {
             view = layoutInflater.inflate(R.layout.icon_list_item, parent, false)
-            return IconItemViewHolder(view)
+            return IconItemViewHolder(view, referenceInterface)
         } else {
             view = layoutInflater.inflate(R.layout.network_state_item, parent, false)
             return NetworkStateItemViewHolder(view)
@@ -38,7 +40,7 @@ class AllIconsPageListAdapter(public val context: Context) :PagedListAdapter<Ico
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (getItemViewType(position) == ICON_VIEW_TYPE) {
-            (holder as IconItemViewHolder).bind(getItem(position),context)
+            (holder as IconItemViewHolder).bind(getItem(position), context)
         }
         else {
             (holder as NetworkStateItemViewHolder).bind(networkState)
@@ -72,11 +74,11 @@ class AllIconsPageListAdapter(public val context: Context) :PagedListAdapter<Ico
 
     }
 
-    class IconItemViewHolder (view : View) : RecyclerView.ViewHolder(view)
+    class IconItemViewHolder(view: View,val  referenceInterface: PassValueInterface) : RecyclerView.ViewHolder(view), View.OnClickListener
     {
         private lateinit var globalIconBinding:IconListItemBinding
-
-        fun bind(icon :Icon?, context : Context)
+        lateinit var downloadUrl:String
+        fun bind(icon: Icon?, context: Context)
         {
             globalIconBinding= IconListItemBinding.bind(itemView.rootView)
             globalIconBinding.cvIconTitle.text=icon?.tags?.get(0)
@@ -88,6 +90,8 @@ class AllIconsPageListAdapter(public val context: Context) :PagedListAdapter<Ico
             else{
                 globalIconBinding.cvIconReleaseDate.visibility=View.GONE
                 globalIconBinding.cvIconDownloadBtn.visibility=View.VISIBLE
+                globalIconBinding.cvIconDownloadBtn.setOnClickListener(this)
+                downloadUrl=""+icon?.rasterSizes?.get(6)?.formats?.get(0)?.downloadUrl
             }
 
             Glide.with(itemView.context).load(icon?.rasterSizes?.get(6)?.formats?.get(0)?.previewUrl).into(globalIconBinding.cvIvIconPoster)
@@ -98,9 +102,21 @@ class AllIconsPageListAdapter(public val context: Context) :PagedListAdapter<Ico
                 context.startActivity(intent)
             }
         }
+
+        override fun onClick(v: View?) {
+            when(v?.id)
+            {
+                R.id.cv_icon_download_btn -> {
+                    referenceInterface.passResultCallback(downloadUrl)
+
+                }
+            }
+        }
+
+
     }
 
-    class NetworkStateItemViewHolder (view: View) : RecyclerView.ViewHolder(view) {
+    class NetworkStateItemViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
         private lateinit var globalNetworkBinding:NetworkStateItemBinding
         fun bind(networkState: NetworkState?) {
@@ -151,6 +167,9 @@ class AllIconsPageListAdapter(public val context: Context) :PagedListAdapter<Ico
         } else if (hasExtraRow && previousState != newNetworkState) { //hasExtraRow is true and hadExtraRow true and (NetworkState.ERROR or NetworkState.ENDOFLIST)
             notifyItemChanged(itemCount - 1)       //add the network message at the end
         }
+    }
 
+    interface PassValueInterface {
+        fun passResultCallback(message: String)
     }
 }
