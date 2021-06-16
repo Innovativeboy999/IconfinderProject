@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.Visibility
 import com.bumptech.glide.Glide
 import com.example.iconfinder.R
 import com.example.iconfinder.data.repository.NetworkState
@@ -78,10 +79,18 @@ class AllIconsPageListAdapter(public val context: Context) :PagedListAdapter<Ico
         fun bind(icon :Icon?, context : Context)
         {
             globalIconBinding= IconListItemBinding.bind(itemView.rootView)
-            globalIconBinding.cvIconTitle.text=icon?.type
-            globalIconBinding.cvIconReleaseDate.text=icon?.publishedAt
+            globalIconBinding.cvIconTitle.text=icon?.tags?.get(0)
+            if(icon?.isPremium==true)
+            {
+                globalIconBinding.cvIconReleaseDate.text="Rs." + icon?.prices?.get(0).price.toString()
+                globalIconBinding.cvIvPaidPosterLeft.visibility=View.VISIBLE
+            }
+            else{
+                globalIconBinding.cvIconReleaseDate.visibility=View.GONE
+                globalIconBinding.cvIconDownloadBtn.visibility=View.VISIBLE
+            }
 
-            Glide.with(itemView.context).load(icon?.rasterSizes?.get(5)?.formats?.get(0)?.previewUrl).into(globalIconBinding.cvIvIconPoster)
+            Glide.with(itemView.context).load(icon?.rasterSizes?.get(6)?.formats?.get(0)?.previewUrl).into(globalIconBinding.cvIvIconPoster)
 
             itemView.setOnClickListener {
                 val intent = Intent(context, IconDetailsActivity::class.java)

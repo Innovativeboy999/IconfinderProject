@@ -16,14 +16,14 @@ import io.reactivex.schedulers.Schedulers
 //surely have gone for PagingSource
 
 
-class IconDataSource(private val apiService:IconInterface, private val compositeDisposable: CompositeDisposable): PageKeyedDataSource<Int, Icon>()
+class IconDataSource(private val apiService:IconInterface, private val compositeDisposable: CompositeDisposable , private var queryString : String ): PageKeyedDataSource<Int, Icon>()
 {
     private var count= FIRST_COUNT
     val networkState: MutableLiveData<NetworkState> = MutableLiveData()
     override fun loadInitial(params: LoadInitialParams<Int>, callback: LoadInitialCallback<Int, Icon>) {
         networkState.postValue(NetworkState.LOADING)
         compositeDisposable.add(
-                apiService.getListIcons(API_KEY, 20, count)
+                apiService.getListIcons(API_KEY, 20, queryString,count)
                         .subscribeOn(Schedulers.io())
                         .subscribe({
                             callback.onResult(it.icons, null, count + 20)
@@ -33,7 +33,6 @@ class IconDataSource(private val apiService:IconInterface, private val composite
                             Log.e("111111", "loadInitial: inside icon data source  load initial"+it.message )
                         })
         )
-
     }
 
     override fun loadBefore(params: LoadParams<Int>, callback: LoadCallback<Int, Icon>)
@@ -45,7 +44,7 @@ class IconDataSource(private val apiService:IconInterface, private val composite
 
         networkState.postValue(NetworkState.LOADING)
         compositeDisposable.add(
-                apiService.getListIcons(API_KEY, 20, params.key)
+                apiService.getListIcons(API_KEY, 20, queryString,params.key)
                         .subscribeOn(Schedulers.io())
                         .subscribe({
                                    if (it.totalCount>=params.key+20)
@@ -60,6 +59,20 @@ class IconDataSource(private val apiService:IconInterface, private val composite
                             networkState.postValue(NetworkState.ERROR)
                             Log.e("111111", "loadInitial: inside icon data source  load After"+it.message )
                         })
+        )
+    }
+
+    fun api_call(query:String)
+    {
+        compositeDisposable.add(
+        apiService.getListIcons(API_KEY, 20, queryString, 0)
+                .subscribeOn(Schedulers.io())
+                .subscribe({
+                    networkState.postValue(NetworkState.LOADED)
+                },{networkState.postValue(NetworkState.ERROR)
+                    Log.e("111111", "loadInitial: inside icon data source  load initial"+it.message )
+
+                })
         )
     }
 

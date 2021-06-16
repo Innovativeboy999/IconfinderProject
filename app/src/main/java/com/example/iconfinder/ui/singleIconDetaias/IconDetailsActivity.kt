@@ -47,7 +47,7 @@ class IconDetailsActivity : AppCompatActivity() {
     {
         Log.i("1111111", "bindUI:test loaded or not "+it.isPremium)
 //        Log.i("11111", "bindUI: "+it.rasterSizes[5].formats[0].previewUrl)
-        val iconUrl : String =it.rasterSizes?.get(0).formats?.get(0).previewUrl
+        val iconUrl : String =it.rasterSizes?.get(6).formats?.get(0).previewUrl
 //        Log.i("1111111", "bindUI: "+iconUrl)
         Glide.with(this).load(iconUrl).into(globalBinding.iconPic)
     }

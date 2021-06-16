@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var globalBinding : ActivityMainBinding
     private lateinit var viewModel: MainActivityViewModel
     lateinit var iconRepository:IconPageListRepository
+    private var queryString=""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,10 +33,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(globalBinding.root)
 
         val apiService : IconInterface=IconClient.getClient()
-
-        iconRepository= IconPageListRepository(apiService)
-
+        iconRepository= IconPageListRepository(apiService, queryString)
         viewModel=getViewModel()
+
 
         val iconAdapter =AllIconsPageListAdapter(this)
         val gridLayoutManager=GridLayoutManager(this, 2)
@@ -57,7 +57,6 @@ class MainActivity : AppCompatActivity() {
         })
 
         viewModel.networkState.observe(this, Observer {
-
 
             globalBinding.progressBarMain.visibility = if (viewModel.listISEmpty() && it == NetworkState.LOADING) View.VISIBLE else View.GONE
             globalBinding.txtErrorMain.visibility = if (viewModel.listISEmpty() && it == NetworkState.ERROR) View.VISIBLE else View.GONE
@@ -85,13 +84,14 @@ class MainActivity : AppCompatActivity() {
                 }
                 override fun onQueryTextSubmit(query: String?): Boolean {
                     Toast.makeText(applicationContext, ""+query, Toast.LENGTH_SHORT).show()
-                    searchView.clearFocus()
+                    iconRepository.getClassDataFactoryReference().refresh(""+query)
 
+                    searchView.clearFocus()
                     return true
                 }
             })
         }
-        
+
         return super.onCreateOptionsMenu(menu)
     }
     private fun getViewModel(): MainActivityViewModel {

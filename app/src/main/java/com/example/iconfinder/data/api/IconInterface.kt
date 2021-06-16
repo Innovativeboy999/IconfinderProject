@@ -19,8 +19,14 @@ interface IconInterface {
         @Path("icon_id") id :Int) : Single<IconDetails>
 
 
+//    @GET("icons/search")
+//    fun getListIcons(@Header("Authorization") token: String ,
+//    @Query("count") numberLimit : Int ,
+//    @Query("offset") offset : Int) : Single<ListIcons>
+
     @GET("icons/search")
-    fun getListIcons(@Header("Authorization") token: String ,
-    @Query("count") numberLimit : Int ,
-    @Query("offset") offset : Int) : Single<ListIcons>
+    fun getListIcons(@Header("Authorization") token: String,
+                     @Query("count") numberLimit : Int,
+                     @Query("query")query: String  ,
+                     @Query("offset") offset : Int) : Single<ListIcons>
 }
